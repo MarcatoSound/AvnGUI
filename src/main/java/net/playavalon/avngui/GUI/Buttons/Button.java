@@ -38,6 +38,8 @@ public class Button {
 
         commands = new ArrayList<>();
         actions = new HashMap<>();
+
+        ButtonManager.put(this);
     }
 
     public Button(@NotNull String id, @NotNull ItemStack item) {
@@ -47,6 +49,8 @@ public class Button {
 
         commands = new ArrayList<>();
         actions = new HashMap<>();
+
+        ButtonManager.put(this);
     }
 
     /**

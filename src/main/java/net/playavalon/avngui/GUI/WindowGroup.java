@@ -5,6 +5,8 @@ import org.bukkit.entity.Player;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import static net.playavalon.avngui.AvnGUI.debug;
+
 public class WindowGroup {
 
     private final ArrayList<Window> windows;
@@ -29,19 +31,21 @@ public class WindowGroup {
 
         WindowGroupManager.put(this);
         playerPosition = new HashMap<>();
+        if (debug) System.out.println("Registered GUI Group: " + namespace);
     }
 
 
     public final void addWindow(Window window) {
         windows.add(window);
         windowsByName.put(window.getName(), window);
+        if (debug) System.out.println("Added '" + window.getName() + "' to group: " + namespace);
     }
 
     public final void removeWindow(String namespace) {
         Window window = windowsByName.get(namespace);
 
         if (window == null) {
-            // TODO Error message reporting non-existent GUI Window
+            System.out.println("ERROR :: Window '" + namespace + "' is not in group '" + this.namespace + "'!");
             return;
         }
 
@@ -65,7 +69,7 @@ public class WindowGroup {
 
     public final void open(Player player) {
         if (windows.isEmpty()) {
-            // TODO Debug message for a group being opened but having no windows.
+            System.out.println("ERROR :: Window group '" + namespace + "' is empty and cannot be opened!");
             return;
         }
         Window window = windows.get(0);

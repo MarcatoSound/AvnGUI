@@ -1,5 +1,7 @@
 package net.playavalon.avngui;
 
+import net.playavalon.avngui.GUI.Buttons.ButtonNext;
+import net.playavalon.avngui.GUI.Buttons.ButtonPrevious;
 import net.playavalon.avngui.GUI.WindowGroup;
 import net.playavalon.avngui.GUI.Window;
 import net.playavalon.avngui.GUI.WindowGroupManager;
@@ -13,6 +15,9 @@ public class AvnAPI {
 
     public AvnAPI(JavaPlugin plugin) {
         AvnAPI.plugin = plugin;
+
+        new ButtonPrevious("previous");
+        new ButtonNext("next");
     }
 
 

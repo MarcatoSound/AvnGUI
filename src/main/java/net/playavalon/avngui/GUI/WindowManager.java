@@ -11,7 +11,12 @@ public class WindowManager {
     }
 
     public static Window getWindow(String namespace) {
-        return windows.get(namespace);
+        Window window = windows.get(namespace);
+        if (window == null) {
+            System.out.println("ERROR :: GUI Window '" + namespace + "' was not found!");
+            return null;
+        }
+        return window;
     }
 
     protected static void put(Window window) {

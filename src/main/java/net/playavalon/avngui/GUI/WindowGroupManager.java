@@ -11,7 +11,12 @@ public class WindowGroupManager {
     }
 
     public static WindowGroup getGroup(String namespace) {
-        return groups.get(namespace);
+        WindowGroup group = groups.get(namespace);
+        if (group == null) {
+            System.out.println("ERROR :: GUI Group '" + namespace + "' was not found!");
+            return null;
+        }
+        return group;
     }
     protected static void put(WindowGroup group) {
         groups.put(group.getName(), group);

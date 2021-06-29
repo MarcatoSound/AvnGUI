@@ -13,6 +13,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static net.playavalon.avngui.AvnAPI.plugin;
+import static net.playavalon.avngui.AvnGUI.debug;
 
 public class Window implements Listener {
 
@@ -43,6 +44,7 @@ public class Window implements Listener {
         Bukkit.getPluginManager().registerEvents(this, plugin);
 
         WindowManager.put(this);
+        if (debug) System.out.println("Registered GUI Window: " + namespace);
     }
 
     /**
@@ -64,6 +66,8 @@ public class Window implements Listener {
         Bukkit.getPluginManager().registerEvents(this, plugin);
 
         WindowManager.put(this);
+        if (debug) System.out.println("Registered GUI Window: " + namespace);
+        group.addWindow(this);
     }
 
 
