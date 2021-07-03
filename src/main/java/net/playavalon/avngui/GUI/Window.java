@@ -1,5 +1,8 @@
 package net.playavalon.avngui.GUI;
 
+import net.playavalon.avngui.GUI.Actions.ButtonAction;
+import net.playavalon.avngui.GUI.Actions.CloseAction;
+import net.playavalon.avngui.GUI.Actions.OpenAction;
 import net.playavalon.avngui.GUI.Buttons.Button;
 import net.playavalon.avngui.Utility.StringUtils;
 import org.bukkit.Bukkit;
@@ -7,6 +10,8 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryCloseEvent;
+import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.inventory.Inventory;
 
 import java.util.HashMap;
@@ -27,6 +32,9 @@ public class Window implements Listener {
     private final HashMap<Player, GUIInventory> inventories;
     private final HashMap<Integer, Button> buttons;
 
+    private final HashMap<String, OpenAction> openActions;
+    private final HashMap<String, CloseAction> closeActions;
+
     /**
      * Create a GUI window belonging to a window group
      * @param namespace The namespaced ID of this GUI window
@@ -40,6 +48,8 @@ public class Window implements Listener {
 
         inventories = new HashMap<>();
         buttons = new HashMap<>();
+        openActions = new HashMap<>();
+        closeActions = new HashMap<>();
 
         Bukkit.getPluginManager().registerEvents(this, plugin);
 
@@ -61,6 +71,8 @@ public class Window implements Listener {
 
         inventories = new HashMap<>();
         buttons = new HashMap<>();
+        openActions = new HashMap<>();
+        closeActions = new HashMap<>();
         this.group = group;
 
         Bukkit.getPluginManager().registerEvents(this, plugin);
@@ -137,6 +149,27 @@ public class Window implements Listener {
 
 
     /**
+     * Add a code action to execute when this inventory is opened.
+     * @see ButtonAction
+     * @param id A namespaced ID to uniquely identify this action
+     * @param action A block of code to execute, express via lambda with '(event) -> { [Your code here] }'
+     */
+    public final void addOpenAction(String id, OpenAction action) {
+        openActions.put(id, action);
+    }
+
+    /**
+     * Add a code action to execute when this inventory is closed.
+     * @see ButtonAction
+     * @param id A namespaced ID to uniquely identify this action
+     * @param action A block of code to execute, express via lambda with '(event) -> { [Your code here] }'
+     */
+    public final void addCloseAction(String id, CloseAction action) {
+        closeActions.put(id, action);
+    }
+
+
+    /**
      * Opens this GUI window for a player
      * @param player The player to open this GUI window for
      */
@@ -191,6 +224,32 @@ public class Window implements Listener {
         if (button == null) return;
 
         button.click(event, this);
+
+    }
+
+    @EventHandler
+    protected final void onOpen(InventoryOpenEvent event) {
+        Player player = (Player)event.getPlayer();
+        GUIInventory gui = inventories.get(player);
+        if (gui == null) return;
+        if (event.getInventory() != gui.getInv()) return;
+
+        for (OpenAction action : openActions.values()) {
+            action.run(event);
+        }
+
+    }
+
+    @EventHandler
+    protected final void onClose(InventoryCloseEvent event) {
+        Player player = (Player)event.getPlayer();
+        GUIInventory gui = inventories.get(player);
+        if (gui == null) return;
+        if (event.getInventory() != gui.getInv()) return;
+
+        for (CloseAction action : closeActions.values()) {
+            action.run(event);
+        }
 
     }
 

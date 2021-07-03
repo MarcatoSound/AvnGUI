@@ -44,7 +44,7 @@ public class Button {
 
     public Button(@NotNull String id, @NotNull ItemStack item) {
         this.id = id;
-        this.item = item;
+        this.item = item.clone();
         item.addItemFlags(ItemFlag.HIDE_ENCHANTS);
 
         commands = new ArrayList<>();
