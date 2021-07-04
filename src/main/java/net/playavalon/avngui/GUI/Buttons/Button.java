@@ -2,9 +2,7 @@ package net.playavalon.avngui.GUI.Buttons;
 
 import net.playavalon.avngui.GUI.Actions.Action;
 import net.playavalon.avngui.GUI.Window;
-import net.playavalon.avngui.GUI.Actions.ButtonAction;
 import net.playavalon.avngui.Utility.StringUtils;
-import org.apache.commons.lang.WordUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
@@ -14,10 +12,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class Button {
 
@@ -25,7 +20,7 @@ public class Button {
     private ItemStack item;
 
     private ArrayList<String> commands;
-    private HashMap<String, ButtonAction> actions;
+    private HashMap<String, Action<InventoryClickEvent>> actions;
 
     public Button(@NotNull String id, @NotNull Material mat, @NotNull String display) {
         this.id = id;
@@ -53,6 +48,15 @@ public class Button {
         ButtonManager.put(this);
     }
 
+    public Button(Button button) {
+        this.id = button.getId();
+        this.item = button.item.clone();
+        item.addItemFlags(ItemFlag.HIDE_ENCHANTS);
+
+        commands = button.getCommands();
+        actions = button.getActions();
+    }
+
     /**
      *
      * @return The namespaced ID of this button.
@@ -68,6 +72,8 @@ public class Button {
     public final ItemStack getItem() {
         return item;
     }
+
+    public final void setItem(ItemStack item) { this.item = item; }
 
 
     // AMOUNT MANAGEMENT
@@ -141,8 +147,13 @@ public class Button {
     public final void addLore(List<String> lines) {
         ItemMeta meta = item.getItemMeta();
 
-        ArrayList<String> lore = new ArrayList<>();
-        lore.addAll(meta.getLore());
+        ArrayList<String> lore;
+        if (meta.getLore() == null) {
+            lore = new ArrayList<>();
+        } else {
+            lore = new ArrayList<>(meta.getLore());
+        }
+
         lore.addAll(lines);
 
         meta.setLore(lore);
@@ -157,8 +168,13 @@ public class Button {
     public final void addLore(String line) {
         ItemMeta meta = item.getItemMeta();
 
-        ArrayList<String> lore = new ArrayList<>();
-        lore.addAll(meta.getLore());
+        ArrayList<String> lore;
+        if (meta.getLore() == null) {
+            lore = new ArrayList<>();
+        } else {
+            lore = new ArrayList<>(meta.getLore());
+        }
+
         lore.add(line);
 
         meta.setLore(lore);
@@ -169,6 +185,13 @@ public class Button {
     public final List<String> getLore() {
         ItemMeta meta = item.getItemMeta();
         return meta.getLore();
+    }
+
+    public final void clearLore() {
+        ItemMeta meta = item.getItemMeta();
+        meta.setLore(new ArrayList<>());
+
+        item.setItemMeta(meta);
     }
 
 
@@ -208,16 +231,19 @@ public class Button {
 
     /**
      * Add a code action to execute when this button is clicked.
-     * @see ButtonAction
+     * @see Action
      * @param id A namespaced ID to uniquely identify this action
      * @param action A block of code to execute, express via lambda with '(event) -> { [Your code here] }'
      */
-    public final void addAction(String id, ButtonAction action) {
+    public final void addAction(String id, Action<InventoryClickEvent> action) {
         actions.put(id, action);
     }
 
     public final void removeAction(String id) {
         actions.remove(id);
+    }
+    public final HashMap<String, Action<InventoryClickEvent>> getActions() {
+        return actions;
     }
 
     /**
@@ -225,7 +251,7 @@ public class Button {
      * @param event The InventoryClickEvent that triggered this method
      */
     public final void runActions(InventoryClickEvent event) {
-        for (Map.Entry<String, ButtonAction> pair : actions.entrySet()) {
+        for (Map.Entry<String, Action<InventoryClickEvent>> pair : actions.entrySet()) {
             pair.getValue().run(event);
         }
     }

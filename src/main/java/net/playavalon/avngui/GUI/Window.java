@@ -1,8 +1,6 @@
 package net.playavalon.avngui.GUI;
 
-import net.playavalon.avngui.GUI.Actions.ButtonAction;
-import net.playavalon.avngui.GUI.Actions.CloseAction;
-import net.playavalon.avngui.GUI.Actions.OpenAction;
+import net.playavalon.avngui.GUI.Actions.Action;
 import net.playavalon.avngui.GUI.Buttons.Button;
 import net.playavalon.avngui.Utility.StringUtils;
 import org.bukkit.Bukkit;
@@ -32,8 +30,8 @@ public class Window implements Listener {
     private final HashMap<Player, GUIInventory> inventories;
     private final HashMap<Integer, Button> buttons;
 
-    private final HashMap<String, OpenAction> openActions;
-    private final HashMap<String, CloseAction> closeActions;
+    private final HashMap<String, Action<InventoryOpenEvent>> openActions;
+    private final HashMap<String, Action<InventoryCloseEvent>> closeActions;
 
     /**
      * Create a GUI window belonging to a window group
@@ -107,15 +105,38 @@ public class Window implements Listener {
     }
 
     /**
-     * Remove a button from this GUI window
-     * @param slot The inventory slot location of the button we're removing
+     * Modify a button already assigned to a slot.
+     * @param slot The slot the button we want is in.
+     * @return The button we're editing.
+     */
+    public final Button editPlayersButton(Player player, int slot) {
+
+        GUIInventory inv = inventories.get(player);
+
+        Button baseButton = inv.getButtons().get(slot);
+        if (baseButton == null) return null;
+
+        Button button = new Button(baseButton);
+        inv.setButton(slot, button);
+
+        return button;
+
+    }
+
+    public final HashMap<Integer, Button> getButtons() {
+        return buttons;
+    }
+
+    /**
+     * Remove a button from this GUI window.
+     * @param slot The inventory slot location of the button we're removing.
      */
     public final void removeButton(int slot) {
         buttons.remove(slot);
     }
 
     /**
-     * Set the label at the top of the GUI window
+     * Set the label at the top of the GUI window.
      * @param label The label of this GUI window. Works with colour codes.
      */
     public final void setLabel(String label) {
@@ -150,24 +171,33 @@ public class Window implements Listener {
 
     /**
      * Add a code action to execute when this inventory is opened.
-     * @see ButtonAction
+     * @see Action
      * @param id A namespaced ID to uniquely identify this action
      * @param action A block of code to execute, express via lambda with '(event) -> { [Your code here] }'
      */
-    public final void addOpenAction(String id, OpenAction action) {
+    public final void addOpenAction(String id, Action<InventoryOpenEvent> action) {
         openActions.put(id, action);
     }
 
     /**
      * Add a code action to execute when this inventory is closed.
-     * @see ButtonAction
+     * @see Action
      * @param id A namespaced ID to uniquely identify this action
      * @param action A block of code to execute, express via lambda with '(event) -> { [Your code here] }'
      */
-    public final void addCloseAction(String id, CloseAction action) {
+    public final void addCloseAction(String id, Action<InventoryCloseEvent> action) {
         closeActions.put(id, action);
     }
 
+
+
+    public final void updateButtons(Player player) {
+        GUIInventory gui = inventories.get(player);
+        Inventory inv = gui.getInv();
+        for (Map.Entry<Integer, Button> pair : gui.getButtons().entrySet()) {
+            inv.setItem(pair.getKey(), pair.getValue().getItem());
+        }
+    }
 
     /**
      * Opens this GUI window for a player
@@ -178,7 +208,7 @@ public class Window implements Listener {
         if (inventories.containsKey(player)) {
             gui = inventories.get(player);
         } else {
-            gui = new GUIInventory(Bukkit.createInventory(player, size, display));
+            gui = new GUIInventory(this, Bukkit.createInventory(player, size, display));
             inventories.put(player, gui);
         }
 
@@ -211,7 +241,7 @@ public class Window implements Listener {
 
 
     @EventHandler
-    protected final void onClick(InventoryClickEvent event) {
+    protected void onClick(InventoryClickEvent event) {
         Player player = (Player)event.getWhoClicked();
         GUIInventory gui = inventories.get(player);
         if (gui == null) return;
@@ -220,7 +250,7 @@ public class Window implements Listener {
         if (cancelClick) event.setCancelled(true);
 
         int slot = event.getRawSlot();
-        Button button = buttons.get(slot);
+        Button button = gui.getButtons().get(slot);
         if (button == null) return;
 
         button.click(event, this);
@@ -228,26 +258,26 @@ public class Window implements Listener {
     }
 
     @EventHandler
-    protected final void onOpen(InventoryOpenEvent event) {
+    protected void onOpen(InventoryOpenEvent event) {
         Player player = (Player)event.getPlayer();
         GUIInventory gui = inventories.get(player);
         if (gui == null) return;
         if (event.getInventory() != gui.getInv()) return;
 
-        for (OpenAction action : openActions.values()) {
+        for (Action<InventoryOpenEvent> action : openActions.values()) {
             action.run(event);
         }
 
     }
 
     @EventHandler
-    protected final void onClose(InventoryCloseEvent event) {
+    protected void onClose(InventoryCloseEvent event) {
         Player player = (Player)event.getPlayer();
         GUIInventory gui = inventories.get(player);
         if (gui == null) return;
         if (event.getInventory() != gui.getInv()) return;
 
-        for (CloseAction action : closeActions.values()) {
+        for (Action<InventoryCloseEvent> action : closeActions.values()) {
             action.run(event);
         }
 
