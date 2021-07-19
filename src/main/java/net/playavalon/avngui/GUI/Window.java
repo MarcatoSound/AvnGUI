@@ -90,6 +90,11 @@ public class Window implements Listener {
     }
 
 
+    public final GUIInventory getPlayersGUI(Player player) {
+        return inventories.get(player);
+    }
+
+
     /**
      * Add a button to this GUI window
      * @param slot The inventory slot (starting from 0) to place this button
@@ -120,6 +125,14 @@ public class Window implements Listener {
         inv.setButton(slot, button);
 
         return button;
+
+    }
+
+    public final void removePlayersButton(Player player, int slot) {
+
+        GUIInventory inv = inventories.get(player);
+
+        inv.removeButton(slot);
 
     }
 

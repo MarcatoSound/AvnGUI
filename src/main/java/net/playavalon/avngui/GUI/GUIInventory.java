@@ -31,4 +31,20 @@ public class GUIInventory {
         buttons.put(slot, button);
         inv.setItem(slot, button.getItem());
     }
+    public void removeButton(int slot) {
+        buttons.remove(slot);
+        inv.setItem(slot, null);
+    }
+
+    public void sort(int slotStart, int slotEnd) {
+        HashMap<Integer, Button> newButtons = new HashMap<>();
+
+        int slot = slotStart;
+        for (Button button : buttons.values()) {
+            if (slot > slotEnd) break;
+            newButtons.put(slot, button);
+        }
+
+        this.buttons = newButtons;
+    }
 }
