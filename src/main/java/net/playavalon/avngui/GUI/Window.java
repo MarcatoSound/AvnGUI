@@ -6,7 +6,9 @@ import net.playavalon.avngui.Utility.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
+import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.inventory.InventoryOpenEvent;
@@ -51,6 +53,10 @@ public class Window implements Listener {
 
         Bukkit.getPluginManager().registerEvents(this, plugin);
 
+        // Check if there's already a window with this namespace and, if so, unregister it.
+        Window oldWindow = WindowManager.getWindowSilent(namespace);
+        if (oldWindow != null) oldWindow.unregister();
+
         WindowManager.put(this);
         if (debug) System.out.println("Registered GUI Window: " + namespace);
     }
@@ -90,7 +96,7 @@ public class Window implements Listener {
     }
 
 
-    public final GUIInventory getPlayersGUI(Player player) {
+    public final GUIInventory getPlayersGui(Player player) {
         return inventories.get(player);
     }
 
@@ -252,12 +258,22 @@ public class Window implements Listener {
         group.previous(player);
     }
 
+    /**
+     * Unregister this GUI's listeners.
+     */
+    public final void unregister() {
+        HandlerList.unregisterAll(this);
+    }
+
 
     @EventHandler
     protected void onClick(InventoryClickEvent event) {
         Player player = (Player)event.getWhoClicked();
         GUIInventory gui = inventories.get(player);
         if (gui == null) return;
+        if (event.getClick() == ClickType.SHIFT_LEFT || event.getClick() == ClickType.SHIFT_RIGHT) {
+            if (event.getInventory() == gui.getInv() && cancelClick) event.setCancelled(true);
+        }
         if (event.getClickedInventory() != gui.getInv()) return;
 
         if (cancelClick) event.setCancelled(true);
