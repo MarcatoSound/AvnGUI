@@ -6,15 +6,15 @@ import net.playavalon.avngui.Utility.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
-import org.bukkit.event.inventory.ClickType;
-import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.event.inventory.InventoryCloseEvent;
-import org.bukkit.event.inventory.InventoryOpenEvent;
+import org.bukkit.event.inventory.*;
 import org.bukkit.inventory.Inventory;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static net.playavalon.avngui.AvnAPI.plugin;
@@ -26,6 +26,7 @@ public class Window implements Listener {
     private final int size;
     private String display;
     private boolean cancelClick = true;
+    private boolean cancelDrag = true;
 
     private WindowGroup group;
 
@@ -34,6 +35,9 @@ public class Window implements Listener {
 
     private final HashMap<String, Action<InventoryOpenEvent>> openActions;
     private final HashMap<String, Action<InventoryCloseEvent>> closeActions;
+    private final HashMap<String, Action<InventoryClickEvent>> clickActions;
+
+    private final List<Player> viewers;
 
     /**
      * Create a GUI window belonging to a window group
@@ -50,6 +54,9 @@ public class Window implements Listener {
         buttons = new HashMap<>();
         openActions = new HashMap<>();
         closeActions = new HashMap<>();
+        clickActions = new HashMap<>();
+
+        viewers = new ArrayList<>();
 
         Bukkit.getPluginManager().registerEvents(this, plugin);
 
@@ -77,7 +84,10 @@ public class Window implements Listener {
         buttons = new HashMap<>();
         openActions = new HashMap<>();
         closeActions = new HashMap<>();
+        clickActions = new HashMap<>();
         this.group = group;
+
+        viewers = new ArrayList<>();
 
         Bukkit.getPluginManager().registerEvents(this, plugin);
 
@@ -95,10 +105,20 @@ public class Window implements Listener {
         this.cancelClick = cancel;
     }
 
+    /**
+     * Sets whether or not to cancel inventory drags when the player drags items over slots
+     * @param cancel "true" by default, false to allow inventory drags
+     */
+    public final void setCancelDrag(boolean cancel) {
+        this.cancelDrag = cancel;
+    }
+
 
     public final GUIInventory getPlayersGui(Player player) {
         return inventories.get(player);
     }
+
+    public final List<Player> getViewers() { return viewers; }
 
 
     /**
@@ -208,6 +228,16 @@ public class Window implements Listener {
         closeActions.put(id, action);
     }
 
+    /**
+     * Add a code action to execute when this inventory is closed.
+     * @see Action
+     * @param id A namespaced ID to uniquely identify this action
+     * @param action A block of code to execute, express via lambda with '(event) -> { [Your code here] }'
+     */
+    public final void addClickAction(String id, Action<InventoryClickEvent> action) {
+        clickActions.put(id, action);
+    }
+
 
 
     public final void updateButtons(Player player) {
@@ -267,14 +297,14 @@ public class Window implements Listener {
 
 
     @EventHandler
-    protected void onClick(InventoryClickEvent event) {
+    protected void onButtonClick(InventoryClickEvent event) {
         Player player = (Player)event.getWhoClicked();
         GUIInventory gui = inventories.get(player);
         if (gui == null) return;
         if (event.getClick() == ClickType.SHIFT_LEFT || event.getClick() == ClickType.SHIFT_RIGHT) {
             if (event.getInventory() == gui.getInv() && cancelClick) event.setCancelled(true);
         }
-        if (event.getClickedInventory() != gui.getInv()) return;
+        if (event.getClickedInventory() != gui.getInv() && event.getInventory() != gui.getInv()) return;
 
         if (cancelClick) event.setCancelled(true);
 
@@ -286,12 +316,42 @@ public class Window implements Listener {
 
     }
 
+    @EventHandler(priority = EventPriority.HIGH)
+    protected void onClick(InventoryClickEvent event) {
+        Player player = (Player)event.getWhoClicked();
+        GUIInventory gui = inventories.get(player);
+        if (gui == null) return;
+        if (event.getClick() == ClickType.SHIFT_LEFT || event.getClick() == ClickType.SHIFT_RIGHT) {
+            if (event.getInventory() == gui.getInv() && cancelClick) event.setCancelled(true);
+        }
+        if (event.getClickedInventory() != gui.getInv() && event.getInventory() != gui.getInv()) return;
+
+        if (cancelClick) event.setCancelled(true);
+
+        for (Action<InventoryClickEvent> action : clickActions.values()) {
+            action.run(event);
+        }
+
+    }
+
+    @EventHandler
+    protected void onDrag(InventoryDragEvent event) {
+        Player player = (Player)event.getWhoClicked();
+        GUIInventory gui = inventories.get(player);
+        if (gui == null) return;
+        if (event.getInventory() != gui.getInv()) return;
+
+        if (cancelDrag) event.setCancelled(true);
+    }
+
     @EventHandler
     protected void onOpen(InventoryOpenEvent event) {
         Player player = (Player)event.getPlayer();
         GUIInventory gui = inventories.get(player);
         if (gui == null) return;
         if (event.getInventory() != gui.getInv()) return;
+
+        viewers.add(player);
 
         for (Action<InventoryOpenEvent> action : openActions.values()) {
             action.run(event);
@@ -305,6 +365,8 @@ public class Window implements Listener {
         GUIInventory gui = inventories.get(player);
         if (gui == null) return;
         if (event.getInventory() != gui.getInv()) return;
+
+        viewers.remove(player);
 
         for (Action<InventoryCloseEvent> action : closeActions.values()) {
             action.run(event);

@@ -98,7 +98,7 @@ public class Button {
      */
     public final void setEnchanted(boolean enchanted) {
         if (enchanted) {
-            item.addEnchantment(Enchantment.WATER_WORKER, 1);
+            item.addUnsafeEnchantment(Enchantment.WATER_WORKER, 1);
         }
         else {
             item.removeEnchantment(Enchantment.WATER_WORKER);
