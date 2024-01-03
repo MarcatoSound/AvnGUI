@@ -11,6 +11,7 @@ import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.*;
 import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.PlayerInventory;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -27,6 +28,7 @@ public class Window implements Listener {
     private String display;
     private boolean cancelClick = true;
     private boolean cancelDrag = true;
+    private boolean allowPlayerInventoryClick;
 
     private WindowGroup group;
 
@@ -111,6 +113,14 @@ public class Window implements Listener {
      */
     public final void setCancelDrag(boolean cancel) {
         this.cancelDrag = cancel;
+    }
+
+    /**
+     * Sets whether to allow players to click their own inventory while in this GUI.
+     * @param allow "false" by default, true to allow player inventory clicks.
+     */
+    public final void setAllowPlayerInventoryClick(boolean allow) {
+        this.allowPlayerInventoryClick = allow;
     }
 
 
@@ -316,8 +326,9 @@ public class Window implements Listener {
 
     }
 
-    @EventHandler(priority = EventPriority.HIGH)
+    @EventHandler(priority = EventPriority.HIGHEST)
     protected void onClick(InventoryClickEvent event) {
+        if (allowPlayerInventoryClick && event.getClickedInventory() instanceof PlayerInventory) return;
         Player player = (Player)event.getWhoClicked();
         GUIInventory gui = inventories.get(player);
         if (gui == null) return;
@@ -334,7 +345,7 @@ public class Window implements Listener {
 
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.HIGHEST)
     protected void onDrag(InventoryDragEvent event) {
         Player player = (Player)event.getWhoClicked();
         GUIInventory gui = inventories.get(player);

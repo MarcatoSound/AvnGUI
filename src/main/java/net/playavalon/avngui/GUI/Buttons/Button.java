@@ -28,8 +28,8 @@ public class Button {
 
         ItemMeta meta = item.getItemMeta();
         meta.setDisplayName(StringUtils.fullColor(display));
+        meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
         item.setItemMeta(meta);
-        item.addItemFlags(ItemFlag.HIDE_ENCHANTS);
 
         commands = new ArrayList<>();
         actions = new HashMap<>();
@@ -40,7 +40,9 @@ public class Button {
     public Button(@NotNull String id, @NotNull ItemStack item) {
         this.id = id;
         this.item = item.clone();
-        item.addItemFlags(ItemFlag.HIDE_ENCHANTS);
+        ItemMeta meta = this.item.getItemMeta();
+        meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
+        this.item.setItemMeta(meta);
 
         commands = new ArrayList<>();
         actions = new HashMap<>();
@@ -51,7 +53,9 @@ public class Button {
     public Button(Button button) {
         this.id = button.getId();
         this.item = button.item.clone();
-        item.addItemFlags(ItemFlag.HIDE_ENCHANTS);
+        ItemMeta meta = item.getItemMeta();
+        meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
+        item.setItemMeta(meta);
 
         commands = button.getCommands();
         actions = button.getActions();
@@ -135,7 +139,7 @@ public class Button {
     public final void setLore(List<String> lore) {
         ItemMeta meta = item.getItemMeta();
 
-        item.setLore(lore);
+        meta.setLore(lore);
 
         item.setItemMeta(meta);
     }
