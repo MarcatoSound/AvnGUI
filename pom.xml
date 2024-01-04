@@ -17,6 +17,14 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
+    <distributionManagement>
+        <repository>
+            <id>aestrus-releases</id>
+            <name>Aestrus's Repository</name>
+            <url>https://maven.aestrus.io/releases</url>
+        </repository>
+    </distributionManagement>
+
     <build>
         <plugins>
             <plugin>
@@ -65,6 +73,12 @@
         <repository>
             <id>minecraft-repo</id>
             <url>https://libraries.minecraft.net/</url>
+        </repository>
+        <!-- Aestrus -->
+        <repository>
+            <id>aestrus-releases</id>
+            <name>Aestrus's Repository</name>
+            <url>https://maven.aestrus.io/releases</url>
         </repository>
     </repositories>
 
