@@ -2,15 +2,15 @@ package net.playavalon.avngui.Utility;
 
 import lombok.Getter;
 import net.kyori.adventure.text.Component;
-import net.md_5.bungee.api.ChatColor;
-import net.playavalon.avngui.AvnGUI;
+import net.kyori.adventure.text.minimessage.MiniMessage;
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 
 import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class StringUtils {
     @Getter private static HashMap<String, String> newColorMap = new HashMap<>();
+    @Getter private static final PlainTextComponentSerializer serializer = PlainTextComponentSerializer.plainText();
+    @Getter private static final MiniMessage miniMessage = MiniMessage.miniMessage();
 
     static {
         newColorMap.put("&0", "<#000000>");
@@ -60,7 +60,7 @@ public class StringUtils {
     }
 
     public static Component modernizeColorsComponent(String input) {
-        return AvnGUI.inst().getMiniMessage().deserialize(modernizeColors(input));
+        return getMiniMessage().deserialize(modernizeColors(input));
     }
 
     public static String modernizeColors(String input) {
