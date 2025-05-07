@@ -1,5 +1,8 @@
 package net.playavalon.avngui;
 
+import lombok.Getter;
+import net.kyori.adventure.text.minimessage.MiniMessage;
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -13,6 +16,9 @@ public final class AvnGUI extends JavaPlugin {
     public static boolean debug = true;
 
     private AvnAPI api;
+
+    @Getter private final PlainTextComponentSerializer serializer = PlainTextComponentSerializer.plainText();
+    @Getter private final MiniMessage miniMessage = MiniMessage.miniMessage();
 
     @Override
     public void onEnable() {
@@ -45,5 +51,9 @@ public final class AvnGUI extends JavaPlugin {
         }*/
 
         return true;
+    }
+
+    public static AvnGUI inst() {
+        return AvnGUI.getPlugin(AvnGUI.class);
     }
 }

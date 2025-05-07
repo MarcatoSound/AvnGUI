@@ -1,5 +1,6 @@
 package net.playavalon.avngui.GUI;
 
+import net.kyori.adventure.text.Component;
 import net.playavalon.avngui.GUI.Actions.Action;
 import net.playavalon.avngui.GUI.Buttons.Button;
 import net.playavalon.avngui.Utility.StringUtils;
@@ -25,7 +26,7 @@ public class Window implements Listener {
 
     private final String namespace;
     private final int size;
-    private String display;
+    private Component display;
     private boolean cancelClick = true;
     private boolean cancelDrag = true;
     private boolean allowPlayerInventoryClick;
@@ -50,7 +51,7 @@ public class Window implements Listener {
     public Window(String namespace, int size, String displayname) {
         this.namespace = namespace;
         this.size = size;
-        this.display = StringUtils.fullColor(displayname);
+        this.display = StringUtils.modernizeColorsComponent(displayname);
 
         inventories = new HashMap<>();
         buttons = new HashMap<>();
@@ -80,7 +81,7 @@ public class Window implements Listener {
     public Window(String namespace, int size, String displayname, WindowGroup group) {
         this.namespace = namespace;
         this.size = size;
-        this.display = StringUtils.fullColor(displayname);
+        this.display = StringUtils.modernizeColorsComponent(displayname);
 
         inventories = new HashMap<>();
         buttons = new HashMap<>();
@@ -189,14 +190,14 @@ public class Window implements Listener {
      * @param label The label of this GUI window. Works with colour codes.
      */
     public final void setLabel(String label) {
-        display = StringUtils.fullColor(label);
+        display = StringUtils.modernizeColorsComponent(label);
     }
 
     /**
      * Get the label of this GUI window
      * @return The coloured label of the GUI window
      */
-    public final String getLabel() {
+    public final Component getLabel() {
         return display;
     }
 

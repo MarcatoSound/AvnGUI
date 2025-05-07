@@ -3,7 +3,7 @@ version: ${project.version}
 main: net.playavalon.avngui.AvnGUI
 api-version: 1.16
 prefix: AvNGUI
-authors: [MarcatoSound]
+authors: [MarcatoSound, Aestrus]
 description: GUI utility for Avalon plugins
 #commands:
 #  uitest:

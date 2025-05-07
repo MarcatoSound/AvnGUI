@@ -1,5 +1,6 @@
 package net.playavalon.avngui.GUI.Buttons;
 
+import net.kyori.adventure.text.Component;
 import net.playavalon.avngui.GUI.Actions.Action;
 import net.playavalon.avngui.GUI.Window;
 import net.playavalon.avngui.Utility.StringUtils;
@@ -27,7 +28,7 @@ public class Button {
         this.item = new ItemStack(mat);
 
         ItemMeta meta = item.getItemMeta();
-        meta.setDisplayName(StringUtils.fullColor(display));
+        meta.displayName(StringUtils.modernizeColorsComponent(display));
         meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
         item.setItemMeta(meta);
 
@@ -102,14 +103,14 @@ public class Button {
      */
     public final void setEnchanted(boolean enchanted) {
         if (enchanted) {
-            item.addUnsafeEnchantment(Enchantment.WATER_WORKER, 1);
+            item.addUnsafeEnchantment(Enchantment.UNBREAKING, 100);
         }
         else {
-            item.removeEnchantment(Enchantment.WATER_WORKER);
+            item.removeEnchantment(Enchantment.UNBREAKING);
         }
     }
     public final boolean isEnchanted() {
-        return item.getEnchantments().containsKey(Enchantment.WATER_WORKER);
+        return item.getEnchantments().containsKey(Enchantment.UNBREAKING);
     }
 
 
@@ -121,12 +122,12 @@ public class Button {
      */
     public final void setDisplayName(String display) {
         ItemMeta meta = item.getItemMeta();
-        meta.setDisplayName(StringUtils.fullColor(display));
+        meta.displayName(StringUtils.modernizeColorsComponent(display));
         item.setItemMeta(meta);
     }
-    public final String getDisplayName() {
+    public final Component getDisplayName() {
         ItemMeta meta = item.getItemMeta();
-        return meta.getDisplayName();
+        return meta.displayName();
     }
 
 
@@ -139,7 +140,22 @@ public class Button {
     public final void setLore(List<String> lore) {
         ItemMeta meta = item.getItemMeta();
 
-        meta.setLore(lore);
+        List<Component> loreComponents = new ArrayList<>();
+        lore.forEach(l -> loreComponents.add(StringUtils.modernizeColorsComponent(l)));
+
+        meta.lore(loreComponents);
+
+        item.setItemMeta(meta);
+    }
+
+    /**
+     * Set the entire lore of this button's itemstack directly with components.
+     * @param lore A collection of lore lines as components
+     */
+    public final void setLoreComponent(List<Component> lore) {
+        ItemMeta meta = item.getItemMeta();
+
+        meta.lore(lore);
 
         item.setItemMeta(meta);
     }
@@ -151,16 +167,61 @@ public class Button {
     public final void addLore(List<String> lines) {
         ItemMeta meta = item.getItemMeta();
 
-        ArrayList<String> lore;
-        if (meta.getLore() == null) {
+        List<Component> loreComponents = new ArrayList<>();
+        lines.forEach(line -> loreComponents.add(StringUtils.modernizeColorsComponent(line)));
+
+        ArrayList<Component> lore;
+        if (meta.lore() == null) {
             lore = new ArrayList<>();
         } else {
-            lore = new ArrayList<>(meta.getLore());
+            lore = new ArrayList<>(meta.lore());
+        }
+
+        lore.addAll(loreComponents);
+
+        meta.lore(lore);
+
+        item.setItemMeta(meta);
+    }
+
+    /**
+     * Add additional lore lines to the existing lore.
+     * @param lines A collection of lore lines as components
+     */
+    public final void addLoreComponents(List<Component> lines) {
+        ItemMeta meta = item.getItemMeta();
+
+        ArrayList<Component> lore;
+        if (meta.lore() == null) {
+            lore = new ArrayList<>();
+        } else {
+            lore = new ArrayList<>(meta.lore());
         }
 
         lore.addAll(lines);
 
-        meta.setLore(lore);
+        meta.lore(lore);
+
+        item.setItemMeta(meta);
+    }
+
+    /**
+     * Add an additional lore line to the existing lore.
+     * @param line One additional lore line as a component
+     */
+    public final void addLoreComponent(Component line) {
+        ItemMeta meta = item.getItemMeta();
+
+        ArrayList<Component> lore;
+        if (meta.lore() == null) {
+            lore = new ArrayList<>();
+        } else {
+            lore = new ArrayList<>(meta.lore());
+        }
+
+        lore.add(line);
+
+        meta.lore(lore);
 
         item.setItemMeta(meta);
     }
@@ -172,28 +233,28 @@ public class Button {
     public final void addLore(String line) {
         ItemMeta meta = item.getItemMeta();
 
-        ArrayList<String> lore;
-        if (meta.getLore() == null) {
+        ArrayList<Component> lore;
+        if (meta.lore() == null) {
             lore = new ArrayList<>();
         } else {
-            lore = new ArrayList<>(meta.getLore());
+            lore = new ArrayList<>(meta.lore());
         }
 
-        lore.add(line);
+        lore.add(StringUtils.modernizeColorsComponent(line));
 
-        meta.setLore(lore);
+        meta.lore(lore);
 
         item.setItemMeta(meta);
     }
 
-    public final List<String> getLore() {
+    public final List<Component> getLore() {
         ItemMeta meta = item.getItemMeta();
-        return meta.getLore();
+        return meta.lore();
     }
 
     public final void clearLore() {
         ItemMeta meta = item.getItemMeta();
-        meta.setLore(new ArrayList<>());
+        meta.lore(new ArrayList<>());
 
         item.setItemMeta(meta);
     }
