@@ -1,11 +1,15 @@
 package net.playavalon.avngui.Utility;
 
+import com.destroystokyo.paper.profile.PlayerProfile;
+import com.destroystokyo.paper.profile.ProfileProperty;
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.properties.Property;
 import net.kyori.adventure.text.Component;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.Damageable;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
 
 import java.lang.reflect.InvocationTargetException;
@@ -27,21 +31,38 @@ public class Util {
         Damageable dmgMeta = (Damageable) item.getItemMeta();
         if (dmgMeta != null) dmgMeta.setDamage ((short) 3);
 
-        SkullMeta itemMeta = (SkullMeta) item.getItemMeta();
+        ItemMeta itemMeta = item.getItemMeta();
 
-        GameProfile gProfile = new GameProfile(UUID.fromString(id), "");
-        gProfile.getProperties().put("texture", new Property("textures", textures));
-        try {
-            Method mtd = itemMeta.getClass().getDeclaredMethod("setProfile", GameProfile.class);
-            mtd.setAccessible(true);
-            mtd.invoke(itemMeta, gProfile);
-        } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException ex) {
-            ex.printStackTrace();
+        if (itemMeta instanceof SkullMeta skullMeta) {
+            itemMeta.displayName(name);
+
+            // Create the GameProfile and set the texture
+            PlayerProfile profile = Bukkit.createProfile(UUID.randomUUID());
+            profile.getProperties().add(new ProfileProperty("textures", textures));
+
+            // Setting the profile to the SkullMeta
+            skullMeta.setPlayerProfile(profile);
+
+            // Apply changes to the ItemStack
+            item.setItemMeta(skullMeta);
+        } else {
+            itemMeta.displayName(name);
+            item.setItemMeta(itemMeta);
         }
 
-        itemMeta.displayName(name);
-
-        item.setItemMeta(itemMeta);
+//        GameProfile gProfile = new GameProfile(UUID.fromString(id), "");
+//        gProfile.getProperties().put("texture", new Property("textures", textures));
+//        try {
+//            Method mtd = itemMeta.getClass().getDeclaredMethod("setProfile", GameProfile.class);
+//            mtd.setAccessible(true);
+//            mtd.invoke(itemMeta, gProfile);
+//        } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException ex) {
+//            ex.printStackTrace();
+//        }
+//
+//        itemMeta.displayName(name);
+//
+//        item.setItemMeta(itemMeta);
 
         return item;
     }
